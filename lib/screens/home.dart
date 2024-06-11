@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
+import '../cubit/home/home_cubit.dart';
 import '../user_controller.dart';
 
 class HomePage extends StatelessWidget {
-  final UserController userController = Get.put(UserController());
+  final searchController = TextEditingController();
 
   HomePage({super.key});
 
@@ -16,54 +18,60 @@ class HomePage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Obx(() {
+          BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
               return TextField(
-                controller: userController.searchController.value,
+                controller: searchController,
                 decoration: const InputDecoration(
                   labelText: 'Search by name, phone or city',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: userController.filterUsers,
-              );
-            }),
-          ),
-          Expanded(
-            child: Obx(() {
-              return ListView.builder(
-                itemCount: userController.displayedUsers.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == userController.users.length) {
-                    return const SizedBox();
-                  }
-                  if (index == userController.displayedUsers.length) {
-                    return ElevatedButton(
-                      onPressed: () => userController.loadMore(),
-                      child: const Text('Load More'),
-                    );
-                  }
-                  final user = userController.displayedUsers[index];
-                  return ListTile(
-                    leading: Image.network(
-                      user.imageUrl,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
-                    title: Text(user.name),
-                    subtitle: Text('${user.city}\n${user.phoneNumber}'),
-                    trailing: Text(
-                      user.isHighStock ? 'High' : 'Low',
-                      style: TextStyle(
-                        color: user.isHighStock ? Colors.green : Colors.red,
-                      ),
-                    ),
-                    onTap: () => _showEditDialog(context, user),
-                  );
+                onChanged: (value) {
+                  BlocProvider.of<HomeCubit>(context)
+                      .filterUsers(searchController.text);
                 },
               );
-            }),
+            },
+          ),
+          BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              final displayedUsers =
+                  BlocProvider.of<HomeCubit>(context).displayedUsers;
+              return Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: displayedUsers.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == displayedUsers.length) {
+                      return ElevatedButton(
+                        onPressed: () {
+                          BlocProvider.of<HomeCubit>(context).loadMore();
+                        },
+                        child: const Text('Load More'),
+                      );
+                    }
+                    final user = displayedUsers[index];
+                    return ListTile(
+                      leading: Image.network(
+                        user.imageUrl,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                      title: Text(user.name),
+                      subtitle: Text('${user.city}\n${user.phoneNumber}'),
+                      trailing: Text(
+                        user.isHighStock ? 'High' : 'Low',
+                        style: TextStyle(
+                          color: user.isHighStock ? Colors.green : Colors.red,
+                        ),
+                      ),
+                      onTap: () => _showEditDialog(context, user),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -98,7 +106,8 @@ class HomePage extends StatelessWidget {
               onPressed: () {
                 final int? newRupee = int.tryParse(_rupeeController.text);
                 if (newRupee != null && newRupee >= 0 && newRupee <= 100) {
-                  userController.updateRupee(user, newRupee);
+                  BlocProvider.of<HomeCubit>(context)
+                      .updateRupee(user, newRupee);
                   Navigator.of(context).pop();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
