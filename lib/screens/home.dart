@@ -20,37 +20,46 @@ class HomePage extends StatelessWidget {
         children: [
           BlocBuilder<HomeCubit, HomeState>(
             builder: (context, state) {
-              return TextField(
-                controller: searchController,
-                decoration: const InputDecoration(
-                  labelText: 'Search by name, phone or city',
-                  border: OutlineInputBorder(),
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: searchController,
+                  decoration: const InputDecoration(
+                    labelText: 'Search by name, phone or city',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    BlocProvider.of<HomeCubit>(context)
+                        .filterUsers(searchController.text);
+                  },
                 ),
-                onChanged: (value) {
-                  BlocProvider.of<HomeCubit>(context)
-                      .filterUsers(searchController.text);
-                },
               );
             },
           ),
           BlocBuilder<HomeCubit, HomeState>(
             builder: (context, state) {
-              final displayedUsers =
-                  BlocProvider.of<HomeCubit>(context).displayedUsers;
+              final HomeCubit cubit = BlocProvider.of<HomeCubit>(context);
+              if(state is HomeInitial){
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
               return Expanded(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: displayedUsers.length + 1,
+                  itemCount: cubit.displayedUsers.length + 1,
                   itemBuilder: (context, index) {
-                    if (index == displayedUsers.length) {
+                    if (index == cubit.displayedUsers.length&& index==cubit.currentMax) {
                       return ElevatedButton(
                         onPressed: () {
                           BlocProvider.of<HomeCubit>(context).loadMore();
                         },
                         child: const Text('Load More'),
                       );
+                    }else if(index == cubit.displayedUsers.length&& index!=cubit.currentMax){
+                      return SizedBox();
                     }
-                    final user = displayedUsers[index];
+                    final user = cubit.displayedUsers[index];
                     return ListTile(
                       leading: Image.network(
                         user.imageUrl,
@@ -66,7 +75,7 @@ class HomePage extends StatelessWidget {
                           color: user.isHighStock ? Colors.green : Colors.red,
                         ),
                       ),
-                      onTap: () => _showEditDialog(context, user),
+                      onTap: () => _showEditDialog(context, user, cubit),
                     );
                   },
                 ),
@@ -78,7 +87,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  void _showEditDialog(BuildContext context, User user) {
+  void _showEditDialog(BuildContext context, User user, HomeCubit cubit) {
     final TextEditingController _rupeeController =
         TextEditingController(text: user.rupee.toString());
 
@@ -106,8 +115,8 @@ class HomePage extends StatelessWidget {
               onPressed: () {
                 final int? newRupee = int.tryParse(_rupeeController.text);
                 if (newRupee != null && newRupee >= 0 && newRupee <= 100) {
-                  BlocProvider.of<HomeCubit>(context)
-                      .updateRupee(user, newRupee);
+                  //nikhil error
+                  cubit.updateRupee(user, newRupee);
                   Navigator.of(context).pop();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(

@@ -22,10 +22,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: BlocProvider(
-        create: (context) => HomeCubit(),
-        child: HomePage(),
-      ),
+      home: const SplashScreen(),
     );
   }
 }

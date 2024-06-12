@@ -54,7 +54,7 @@ class HomeCubit extends Cubit<HomeState> {
       );
     });
     displayedUsers.addAll(users.take(currentMax));
-    emit(HomeUserShow(users: displayedUsers));
+    emit(HomeUserShow());
     /*scrollController.addListener(() {
       if (ScrollController().position.pixels ==
           ScrollController().position.maxScrollExtent) {
@@ -67,14 +67,14 @@ class HomeCubit extends Cubit<HomeState> {
     if (currentMax < users.length) {
       currentMax += 20;
       displayedUsers.assignAll(users.take(currentMax));
-      emit(HomeUserShow(users: displayedUsers));
+      emit(HomeUserShow());
     }
   }
 
   void filterUsers(String query) {
     if (query.isEmpty) {
       displayedUsers.assignAll(users.take(currentMax));
-      emit(HomeUserShow(users: displayedUsers));
+      emit(HomeUserShow());
     } else {
       displayedUsers.assignAll(users
           .where((user) =>
@@ -83,13 +83,25 @@ class HomeCubit extends Cubit<HomeState> {
               user.city.contains(query))
           .take(currentMax)
           .toList());
-      emit(HomeUserShow(users: displayedUsers));
+      emit(HomeUserShow());
     }
   }
 
   void updateRupee(User user, int newRupee) {
-    print("object");
-    user.rupee = newRupee;
-
+    users.map(
+      (e) {
+        if (e.name == user.name) {
+          e.rupee = newRupee;
+        }
+      },
+    ).toList();
+    displayedUsers.map(
+      (e) {
+        if (e.name == user.name) {
+          e.rupee = newRupee;
+        }
+      },
+    ).toList();
+    emit(HomeUserShow());
   }
 }
