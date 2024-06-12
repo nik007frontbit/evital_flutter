@@ -39,7 +39,8 @@ class HomePage extends StatelessWidget {
           BlocBuilder<HomeCubit, HomeState>(
             builder: (context, state) {
               final HomeCubit cubit = BlocProvider.of<HomeCubit>(context);
-              if(state is HomeInitial){
+
+              if (state is HomeInitial) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
@@ -49,15 +50,17 @@ class HomePage extends StatelessWidget {
                   shrinkWrap: true,
                   itemCount: cubit.displayedUsers.length + 1,
                   itemBuilder: (context, index) {
-                    if (index == cubit.displayedUsers.length&& index==cubit.currentMax) {
+                    if (index == cubit.displayedUsers.length &&
+                        index == cubit.currentMax) {
                       return ElevatedButton(
                         onPressed: () {
                           BlocProvider.of<HomeCubit>(context).loadMore();
                         },
                         child: const Text('Load More'),
                       );
-                    }else if(index == cubit.displayedUsers.length&& index!=cubit.currentMax){
-                      return SizedBox();
+                    } else if (index == cubit.displayedUsers.length &&
+                        index != cubit.currentMax) {
+                      return const SizedBox();
                     }
                     final user = cubit.displayedUsers[index];
                     return ListTile(
